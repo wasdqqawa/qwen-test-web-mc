@@ -1,0 +1,30 @@
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+build/
+*.js
+*.css
+*.map
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+```
