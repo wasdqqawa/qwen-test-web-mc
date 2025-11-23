@@ -22,7 +22,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(), // 使用createWebHistory用于GitHub Pages部署
+  history: createWebHistory('./'), // 使用相对路径用于GitHub Pages部署
   routes
 })
 
