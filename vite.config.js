@@ -4,17 +4,24 @@ import vue from '@vitejs/plugin-vue'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  base: '/qwen-test-vue/', // GitHub Pages base path
+  base: './', // 使用相对路径用于GitHub Pages部署
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
     minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true, // 移除console
+        drop_debugger: true, // 移除debugger
+      },
+    },
     cssCodeSplit: false, // 合并CSS文件以减少HTTP请求
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['vue', 'vue-router'],
+          hls: ['hls.js'], // 单独打包hls.js
         },
         // 优化文件名，便于缓存
         entryFileNames: 'assets/[name].[hash].js',
@@ -35,6 +42,6 @@ export default defineConfig({
   },
   // 优化开发服务器
   optimizeDeps: {
-    include: ['vue', 'vue-router']
+    include: ['vue', 'vue-router', 'hls.js']
   }
 })

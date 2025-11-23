@@ -1,93 +1,145 @@
-# Qwen Test Vue 博客
+# 在线M3U8播放器
 
-这是一个使用 Vite 创建的现代化、全中文的 Vue.js 博客项目，可部署到 GitHub Pages。项目特点：
-
-- 现代化的 Vue 3 和 Composition API
-- 响应式设计和美观的 UI
-- 博客功能：文章、分类和评论
-- 搜索功能
-- 专为 GitHub Pages 部署优化
+一个基于Vue 3和HLS.js的在线M3U8直播流播放器，支持多种功能和优化的用户体验。
 
 ## 功能特性
 
-- 🎨 美观、响应式的 UI，包含动画和渐变效果
-- 📱 完全响应式设计
-- 🔍 搜索功能
-- 📝 文章管理功能
-- 💬 评论系统
-- 📊 分类组织
+- 📺 **M3U8流播放**: 支持HLS格式的直播流播放
+- 🎛️ **画质切换**: 自动检测并切换不同画质的流
+- 🔊 **音量控制**: 支持音量调节和静音功能
+- 🎮 **播放控制**: 播放/暂停控制
+- 🖥️ **全屏模式**: 支持全屏播放
+- 📜 **播放历史**: 本地存储播放历史记录
+- 🌐 **跨浏览器支持**: 支持Chrome、Firefox、Safari、Edge等主流浏览器
+- 📱 **响应式设计**: 适配移动端和桌面端
 
-## 部署到 GitHub Pages
+## 技术栈
 
-此项目已配置为部署到 GitHub Pages：https://wasdqqawa.github.io/qwen-test-vue/
+- [Vue 3](https://vuejs.org/) - 渐进式JavaScript框架
+- [Vite](https://vitejs.dev/) - 下一代前端构建工具
+- [HLS.js](https://github.com/video-dev/hls.js/) - JavaScript HLS播放器
+- [Vue Router](https://router.vuejs.org/) - Vue.js官方路由管理器
 
-### 部署步骤：
+## 预设流地址
 
-1. 确保你的 GitHub 仓库名为 `qwen-test-vue`
-2. 在仓库设置中启用 GitHub Pages (Settings > Pages > Source: GitHub Actions 或 gh-pages 分支)
-3. 运行以下命令：
+播放器内置了多个测试流地址，包括：
+- Mux测试流
+- Apple官方测试流
+- Big Buck Bunny测试流
+- 法国新闻频道
+
+## 使用说明
+
+1. 在输入框中输入有效的M3U8直播流地址
+2. 点击"加载流"按钮开始播放
+3. 可以使用预设按钮快速加载常用流
+4. 播放过程中可以切换画质、调节音量、全屏播放等
+
+## 性能优化
+
+- 代码分割和懒加载
+- 资源压缩和缓存优化
+- 移除生产环境中的调试信息
+- 优化的构建配置
+- 内存泄漏防护
+
+## 本地开发
+
+### 环境要求
+
+- Node.js 16.x 或更高版本
+- npm 或 yarn
+
+### 安装和运行
 
 ```bash
+# 克隆项目
+git clone <repository-url>
+cd m3u8-player
+
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+```
+
+开发服务器将在 `http://localhost:3000` 上运行。
+
+### 构建生产版本
+
+```bash
+# 构建生产版本
 npm run build
+
+# 预览生产构建
+npm run preview
 ```
 
-4. `dist` 文件夹包含为 GitHub Pages 准备的构建应用
-5. 你可以使用 `deploy.sh` 脚本进行部署：
+## 部署到GitHub Pages
+
+项目已配置为支持GitHub Pages部署：
 
 ```bash
-./deploy.sh
+# 部署到GitHub Pages
+npm run deploy
 ```
 
-### 配置说明：
+## 项目结构
 
-- `vite.config.js` 文件配置了 `base: '/qwen-test-vue/'` 用于 GitHub Pages
-- 路由器使用 `createWebHistory('./')` 用于相对路径
-- 所有资源使用相对路径，确保在 GitHub Pages 子目录中正常工作
-
----
-
-# Qwen Test Vue Blog
-
-This is a modern, Chinese-only Vue.js blog project created with Vite that can be deployed to GitHub Pages. The project features:
-
-- Modern Vue 3 with Composition API
-- Responsive design with beautiful UI
-- Blog functionality with posts, categories, and comments
-- Search functionality
-- GitHub Pages deployment ready
-
-## Features
-
-- 🎨 Beautiful, responsive UI with animations and gradients
-- 📱 Fully responsive design
-- 🔍 Search functionality
-- 📝 Blog post management
-- 💬 Comment system
-- 📊 Category organization
-
-## Deployment to GitHub Pages
-
-This project is configured to deploy to GitHub Pages at: https://wasdqqawa.github.io/qwen-test-vue/
-
-### Steps to deploy:
-
-1. Make sure your GitHub repository is named `qwen-test-vue`
-2. Enable GitHub Pages in your repository settings (Settings > Pages > Source: GitHub Actions or gh-pages branch)
-3. Run the following commands:
-
-```bash
-npm run build
+```
+.
+├── public/                 # 静态资源
+├── src/
+│   ├── components/         # Vue组件
+│   │   └── M3U8Player.vue # 主播放器组件
+│   ├── App.vue            # 根组件
+│   └── main.js            # 应用入口
+├── index.html             # HTML模板
+├── package.json           # 项目配置
+├── vite.config.js         # Vite配置
+└── README.md              # 项目说明
 ```
 
-4. The `dist` folder contains the built application ready for GitHub Pages
-5. You can deploy using the `deploy.sh` script:
+## 浏览器兼容性
 
-```bash
-./deploy.sh
-```
+- Chrome 62+
+- Firefox 53+
+- Safari 11+
+- Edge 79+
 
-### Configuration Notes:
+## 常见问题
 
-- The `vite.config.js` file is configured with `base: '/qwen-test-vue/'` for GitHub Pages
-- The router uses `createWebHistory('./')` for relative paths
-- All assets are referenced with relative paths to work correctly on GitHub Pages subdirectories
+### 播放失败
+
+1. 检查M3U8地址是否有效
+2. 确认服务器支持CORS（跨域资源共享）
+3. 检查网络连接是否正常
+
+### 画质切换不生效
+
+- 确保M3U8流包含多个画质版本
+- 某些流可能不支持动态画质切换
+
+## 贡献
+
+欢迎提交Issue和Pull Request来改进项目。
+
+## 许可证
+
+本项目采用 [MIT License](LICENSE) 许可证。
+
+## 更新日志
+
+### v1.1.0
+- 添加画质切换功能
+- 添加播放控制（音量、静音、播放/暂停）
+- 添加全屏模式
+- 添加播放历史记录
+- 优化UI界面
+- 性能优化和错误处理改进
+
+### v1.0.0
+- 初始版本
+- 基础M3U8播放功能
+- 预设流地址
