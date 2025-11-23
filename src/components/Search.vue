@@ -1,40 +1,56 @@
 <template>
-  <div class="home">
-    <section class="hero">
-      <h1>Welcome to My Blog</h1>
-      <p>A place to share thoughts, ideas, and experiences</p>
-    </section>
-
-    <div class="content-container">
-      <section class="blog-posts">
-        <div class="post-card" v-for="post in posts" :key="post.id">
-          <h2 class="post-title">
-            <router-link :to="`/post/${post.id}`">{{ post.title }}</router-link>
-          </h2>
-          <p class="post-meta">
-            By {{ post.author }} on {{ formatDate(post.date) }}
-          </p>
-          <p class="post-excerpt">{{ post.excerpt }}</p>
-          <router-link :to="`/post/${post.id}`" class="read-more">Read More</router-link>
-        </div>
-      </section>
-      
-      <Sidebar />
+  <div class="search-container">
+    <div class="search-bar">
+      <input 
+        type="text" 
+        v-model="searchQuery" 
+        placeholder="Search blog posts..." 
+        @input="performSearch"
+        class="search-input"
+      />
+      <button @click="performSearch" class="search-button">
+        <span>🔍</span>
+      </button>
+    </div>
+    
+    <div v-if="searchResults.length > 0" class="search-results">
+      <h3>Search Results ({{ searchResults.length }})</h3>
+      <div 
+        v-for="post in searchResults" 
+        :key="post.id" 
+        class="search-result-item"
+        @click="goToPost(post.id)"
+      >
+        <h4>{{ post.title }}</h4>
+        <p>{{ post.excerpt }}</p>
+        <small>By {{ post.author }} on {{ formatDate(post.date) }}</small>
+      </div>
+    </div>
+    
+    <div v-else-if="searchQuery && searchResults.length === 0" class="no-results">
+      <p>No results found for "{{ searchQuery }}"</p>
     </div>
   </div>
 </template>
 
 <script>
-import Sidebar from './Sidebar.vue';
-
 export default {
-  name: 'Home',
-  components: {
-    Sidebar
-  },
+  name: 'Search',
   data() {
     return {
-      posts: [
+      searchQuery: '',
+      allPosts: [],
+      searchResults: []
+    }
+  },
+  mounted() {
+    // 获取所有文章数据
+    this.getAllPosts();
+  },
+  methods: {
+    getAllPosts() {
+      // 这里需要获取所有文章数据
+      this.allPosts = [
         {
           id: 1,
           title: 'Getting Started with Vue.js',
@@ -79,110 +95,132 @@ Artificial Intelligence and Machine Learning are also making their way into web 
 
 Serverless architectures and edge computing are changing how we think about backend infrastructure, allowing developers to focus on writing code rather than managing servers. These technologies are making web applications more scalable and cost-effective.`
         }
-      ]
-    }
-  },
-  methods: {
+      ];
+    },
+    performSearch() {
+      if (!this.searchQuery.trim()) {
+        this.searchResults = [];
+        return;
+      }
+      
+      const query = this.searchQuery.toLowerCase();
+      
+      this.searchResults = this.allPosts.filter(post => 
+        post.title.toLowerCase().includes(query) || 
+        post.excerpt.toLowerCase().includes(query) ||
+        post.content.toLowerCase().includes(query)
+      );
+    },
     formatDate(dateString) {
-      const options = { year: 'numeric', month: 'long', day: 'numeric' }
-      return new Date(dateString).toLocaleDateString(undefined, options)
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    },
+    goToPost(id) {
+      this.$router.push(`/post/${id}`);
+      this.searchQuery = '';
+      this.searchResults = [];
     }
   }
 }
 </script>
 
 <style scoped>
-.hero {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-}
-
-.hero h1 {
-  font-size: 2.5rem;
+.search-container {
+  position: relative;
   margin-bottom: 1rem;
 }
 
-.hero p {
+.search-bar {
+  display: flex;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+}
+
+.search-button {
+  padding: 0 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  cursor: pointer;
   font-size: 1.2rem;
-  opacity: 0.9;
 }
 
-.blog-posts {
-  display: grid;
-  gap: 2rem;
+.search-button:hover {
+  background: #5a6fd8;
 }
 
-.post-card {
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.post-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+.search-results h3 {
+  padding: 1rem;
+  margin: 0;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  border-radius: 4px 4px 0 0;
 }
 
-.post-title {
+.search-result-item {
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search-result-item:hover {
+  background-color: #f8f9fa;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-item h4 {
   margin: 0 0 0.5rem 0;
-}
-
-.post-title a {
   color: #333;
-  text-decoration: none;
-  font-size: 1.5rem;
-  font-weight: 600;
 }
 
-.post-title a:hover {
-  color: #667eea;
-}
-
-.post-meta {
+.search-result-item p {
+  margin: 0 0 0.5rem 0;
   color: #6c757d;
   font-size: 0.9rem;
-  margin-bottom: 1rem;
 }
 
-.post-excerpt {
-  color: #495057;
-  line-height: 1.6;
-  margin-bottom: 1rem;
+.search-result-item small {
+  color: #868e96;
+  font-size: 0.8rem;
 }
 
-.read-more {
-  display: inline-block;
-  color: #667eea;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.read-more:hover {
-  text-decoration: underline;
-}
-
-@media (min-width: 768px) {
-  .blog-posts {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.content-container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-@media (min-width: 1024px) {
-  .content-container {
-    grid-template-columns: 2fr 1fr;
-  }
+.no-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 1rem;
 }
 </style>

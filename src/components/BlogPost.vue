@@ -26,6 +26,8 @@
           {{ nextPost.title }} →
         </router-link>
       </div>
+      
+      <Comments :postId="post.id" />
     </article>
     
     <div v-else class="not-found">
@@ -37,8 +39,13 @@
 </template>
 
 <script>
+import Comments from './Comments.vue';
+
 export default {
   name: 'BlogPost',
+  components: {
+    Comments
+  },
   props: ['id'],
   data() {
     return {

@@ -17,6 +17,9 @@ import { RouterLink, RouterView } from 'vue-router'
           <li class="nav-item">
             <RouterLink to="/contact" class="nav-link">Contact</RouterLink>
           </li>
+          <li class="nav-item">
+            <RouterLink to="/categories" class="nav-link">Categories</RouterLink>
+          </li>
         </ul>
       </div>
     </nav>
