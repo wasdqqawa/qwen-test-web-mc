@@ -1,65 +1,98 @@
 ```
+# Unity project files
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+*.unityproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.unity
+*.unity.meta
+*.asset
+*.asset.meta
+*.prefab
+*.prefab.meta
+*.mat
+*.mat.meta
+*.anim
+*.anim.meta
+*.controller
+*.controller.meta
+*.overrides
+*.overrides.meta
+*.mask
+*.mask.meta
+*.blend
+*.blend.meta
+*.fbx
+*.fbx.meta
+*.dae
+*.dae.meta
+*.3ds
+*.3ds.meta
+*.obj
+*.obj.meta
+*.max
+*.max.meta
+*.c4d
+*.c4d.meta
+*.blend1
+*.a
+*.so
+*.jar
+*.bat
+*.sh
+*.exe
+*.dll
+*.pdb
+*.meta
+*.pidb
+*.pref
+*.db
+*.bin
+*.idx
+*.map
+*.tmp
+*.log
+*.cache
+*.ilk
+*.manifest
+*.meta
+*.pidb
+*.pref
+*.db
+*.bin
+*.idx
+*.map
+*.tmp
+*.log
+*.cache
+*.ilk
+*.manifest
+*.DS_Store
+Thumbs.db
+
 # Build artifacts
-dist/
 build/
 
-# Dependencies
-node_modules/
-
-# Logs
-*.log
-
-# Environment
+# Environment files
 .env
 .env.local
 *.env.*
 
-# Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*.tmp
-
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
+# Logs
 *.log
-.git/modules/
-*.sublime-workspace
-.pytest_cache/
-.mypy_cache/
-.hypothesis/
 
-# Compiled and binary files
-*.o
-*.obj
-*.so
-*.a
-*.dll
-*.exe
-*.out
-*.class
-*.jar
-*.war
+# Compressed files
 *.zip
-*.tar
 *.gz
+*.tar
 *.tgz
 *.bz2
 *.xz
@@ -75,8 +108,8 @@ coverage.xml
 *.Z
 *.lz
 *.lzo
-
-# System files
-.DS_Store
-Thumbs.db
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```

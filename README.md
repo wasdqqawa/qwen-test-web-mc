@@ -1,125 +1,105 @@
-# 在线M3U8播放器
+# Minecraft 克隆游戏
 
-一个基于Vue 3和HLS.js的在线M3U8直播流播放器，支持多种功能和优化的用户体验。
+一个基于Unity 3D的WebGL实现的Minecraft风格游戏，支持方块放置/破坏、3D世界探索和基本的Minecraft功能。
 
 ## 功能特性
 
-- 📺 **M3U8流播放**: 支持HLS格式的直播流播放
-- 🎛️ **画质切换**: 自动检测并切换不同画质的流
-- 🔊 **音量控制**: 支持音量调节和静音功能
-- 🎮 **播放控制**: 播放/暂停控制
-- 🖥️ **全屏模式**: 支持全屏播放
-- 📜 **播放历史**: 本地存储播放历史记录
-- 🌐 **跨浏览器支持**: 支持Chrome、Firefox、Safari、Edge等主流浏览器
-- 📱 **响应式设计**: 适配移动端和桌面端
+- 🧱 **方块放置与破坏**: 点击鼠标左键破坏方块，右键放置方块
+- 🎮 **3D世界探索**: 支持自由移动、跳跃等基本操作
+- 🌍 **程序化世界生成**: 基于噪声算法生成的地形
+- 🎯 **第一人称视角**: 流畅的3D视角控制
+- 🌐 **WebGL兼容**: 可在浏览器中直接运行，支持GitHub Pages部署
+- 🧱 **多种方块类型**: 包含基岩、石头、泥土、草方块等
 
 ## 技术栈
 
-- [Vue 3](https://vuejs.org/) - 渐进式JavaScript框架
-- [Vite](https://vitejs.dev/) - 下一代前端构建工具
-- [HLS.js](https://github.com/video-dev/hls.js/) - JavaScript HLS播放器
-- [Vue Router](https://router.vuejs.org/) - Vue.js官方路由管理器
+- [Unity 3D](https://unity.com/) - 3D游戏开发引擎
+- [C#](https://docs.microsoft.com/en-us/dotnet/csharp/) - 游戏逻辑编程语言
+- [WebGL](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API) - Web图形渲染技术
+- [Unity Physics](https://docs.unity3d.com/Manual/PhysicsSection.html) - 3D物理引擎
 
-## 预设流地址
+## 游戏操作
 
-播放器内置了多个测试流地址，包括：
-- Mux测试流
-- Apple官方测试流
-- Big Buck Bunny测试流
-- 法国新闻频道
-
-## 使用说明
-
-1. 在输入框中输入有效的M3U8直播流地址
-2. 点击"加载流"按钮开始播放
-3. 可以使用预设按钮快速加载常用流
-4. 播放过程中可以切换画质、调节音量、全屏播放等
-
-## 性能优化
-
-- 代码分割和懒加载
-- 资源压缩和缓存优化
-- 移除生产环境中的调试信息
-- 优化的构建配置
-- 内存泄漏防护
-
-## 本地开发
-
-### 环境要求
-
-- Node.js 16.x 或更高版本
-- npm 或 yarn
-
-### 安装和运行
-
-```bash
-# 克隆项目
-git clone <repository-url>
-cd m3u8-player
-
-# 安装依赖
-npm install
-
-# 启动开发服务器
-npm run dev
-```
-
-开发服务器将在 `http://localhost:3000` 上运行。
-
-### 构建生产版本
-
-```bash
-# 构建生产版本
-npm run build
-
-# 预览生产构建
-npm run preview
-```
-
-## 部署到GitHub Pages
-
-项目已配置为支持GitHub Pages部署：
-
-```bash
-# 部署到GitHub Pages
-npm run deploy
-```
+- WASD 或 方向键 - 移动角色
+- 鼠标 - 控制视角
+- 空格键 - 跳跃
+- 鼠标左键 - 破坏方块
+- 鼠标右键 - 放置方块
 
 ## 项目结构
 
 ```
 .
-├── public/                 # 静态资源
-├── src/
-│   ├── components/         # Vue组件
-│   │   └── M3U8Player.vue # 主播放器组件
-│   ├── App.vue            # 根组件
-│   └── main.js            # 应用入口
-├── index.html             # HTML模板
-├── package.json           # 项目配置
-├── vite.config.js         # Vite配置
-└── README.md              # 项目说明
+├── Assets/                 # Unity项目资源
+│   ├── Scenes/            # 游戏场景
+│   ├── Scripts/           # C#脚本
+│   ├── Materials/         # 材质文件
+│   └── Textures/          # 纹理文件
+├── ProjectSettings/       # Unity项目设置
+├── Packages/              # Unity包管理
+├── README.md             # 项目说明
+└── index.html            # WebGL启动页面
 ```
+
+## 开发说明
+
+### 环境要求
+
+- Unity 2021.3 LTS 或更高版本
+- 支持WebGL构建模块
+
+### 本地开发
+
+1. 使用Unity Hub打开项目
+2. 选择Assets/Scenes/SampleScene场景
+3. 点击运行按钮进行测试
+
+### 构建WebGL版本
+
+1. 在Unity中选择 File → Build Settings
+2. 选择 WebGL 平台
+3. 点击 Build 按钮
+4. 部署生成的文件到Web服务器
+
+## 核心功能实现
+
+### 1. 玩家控制器 (PlayerController.cs)
+- 实现角色移动和重力系统
+- 处理跳跃和地面检测
+- 响应用户输入
+
+### 2. 世界生成器 (WorldGenerator.cs)
+- 使用Perlin噪声算法生成地形
+- 创建不同类型的方块（基岩、石头、泥土、草方块）
+- 管理方块材质和位置
+
+### 3. 方块交互 (BlockInteraction.cs)
+- 处理方块放置和破坏
+- 使用射线检测确定交互对象
+- 管理世界中的方块状态
+
+## 部署到GitHub Pages
+
+项目已配置为支持GitHub Pages部署：
+
+1. 构建WebGL版本
+2. 将构建结果上传到GitHub仓库
+3. 在GitHub仓库设置中启用GitHub Pages
 
 ## 浏览器兼容性
 
-- Chrome 62+
-- Firefox 53+
-- Safari 11+
-- Edge 79+
+- Chrome 90+
+- Firefox 89+
+- Safari 14+
+- Edge 90+
 
-## 常见问题
+## 未来功能
 
-### 播放失败
-
-1. 检查M3U8地址是否有效
-2. 确认服务器支持CORS（跨域资源共享）
-3. 检查网络连接是否正常
-
-### 画质切换不生效
-
-- 确保M3U8流包含多个画质版本
-- 某些流可能不支持动态画质切换
+- 多人联机支持
+- 更多方块类型
+- 物品系统
+- 光照系统
+- 更复杂的地形生成
 
 ## 贡献
 
@@ -128,18 +108,3 @@ npm run deploy
 ## 许可证
 
 本项目采用 [MIT License](LICENSE) 许可证。
-
-## 更新日志
-
-### v1.1.0
-- 添加画质切换功能
-- 添加播放控制（音量、静音、播放/暂停）
-- 添加全屏模式
-- 添加播放历史记录
-- 优化UI界面
-- 性能优化和错误处理改进
-
-### v1.0.0
-- 初始版本
-- 基础M3U8播放功能
-- 预设流地址
