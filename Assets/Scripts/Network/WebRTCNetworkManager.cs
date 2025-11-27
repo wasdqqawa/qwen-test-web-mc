@@ -73,15 +73,28 @@ public class WebRTCNetworkManager : MonoBehaviour
         localPlayerId = GeneratePlayerId();
         
 #if UNITY_WEBGL && !UNITY_EDITOR
-        if (WebRTC_Init())
+        try 
         {
-            isInitialized = true;
-            if (debugMode)
-                Debug.Log("WebRTC Network Manager Initialized. Local ID: " + localPlayerId);
+            if (WebRTC_Init())
+            {
+                isInitialized = true;
+                if (debugMode)
+                    Debug.Log("WebRTC Network Manager Initialized. Local ID: " + localPlayerId);
+            }
+            else
+            {
+                Debug.LogError("Failed to initialize WebRTC - browser may not support required features. Running in single player mode.");
+                // 如果WebRTC初始化失败，自动进入单人模式
+                isSinglePlayerMode = true;
+                isInitialized = true;
+            }
         }
-        else
+        catch (Exception e)
         {
-            Debug.LogError("Failed to initialize WebRTC");
+            Debug.LogError("WebRTC initialization error: " + e.Message + ". Running in single player mode.");
+            // 如果出现异常，自动进入单人模式
+            isSinglePlayerMode = true;
+            isInitialized = true;
         }
 #else
         // 非WebGL平台的模拟实现
@@ -101,18 +114,44 @@ public class WebRTCNetworkManager : MonoBehaviour
         if (!isInitialized) return;
         
 #if UNITY_WEBGL && !UNITY_EDITOR
-        string roomId = "mc_" + System.DateTime.Now.Ticks.ToString();
-        if (WebRTC_CreateRoom(roomId))
+        if (isSinglePlayerMode)
         {
+            // 如果在单人模式下尝试启动主机，则直接设置为主机模式
             isHost = true;
             connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
             
             if (debugMode)
-                Debug.Log("Started as Host. Room ID: " + roomId + ", Player ID: " + localPlayerId);
+                Debug.Log("Started as Host in Single Player Mode. Player ID: " + localPlayerId);
+            return;
         }
-        else
+        
+        string roomId = "mc_" + System.DateTime.Now.Ticks.ToString();
+        try 
         {
-            Debug.LogError("Failed to create WebRTC room");
+            if (WebRTC_CreateRoom(roomId))
+            {
+                isHost = true;
+                connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
+                
+                if (debugMode)
+                    Debug.Log("Started as Host. Room ID: " + roomId + ", Player ID: " + localPlayerId);
+            }
+            else
+            {
+                Debug.LogError("Failed to create WebRTC room. Falling back to single player mode.");
+                // 创建房间失败时，切换到单人模式
+                isSinglePlayerMode = true;
+                isHost = true;
+                connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error creating WebRTC room: " + e.Message + ". Falling back to single player mode.");
+            // 出现异常时，切换到单人模式
+            isSinglePlayerMode = true;
+            isHost = true;
+            connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
         }
 #else
         isHost = true;
@@ -139,17 +178,38 @@ public class WebRTCNetworkManager : MonoBehaviour
         if (!isInitialized) return;
         
 #if UNITY_WEBGL && !UNITY_EDITOR
-        if (WebRTC_JoinRoom(roomId))
+        if (isSinglePlayerMode)
         {
-            isHost = false;
-            connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, false);
-            
-            if (debugMode)
-                Debug.Log("Joined Game. Room ID: " + roomId + ", Player ID: " + localPlayerId);
+            Debug.LogWarning("Cannot join multiplayer game when in single player mode.");
+            return;
         }
-        else
+        
+        try 
         {
-            Debug.LogError("Failed to join WebRTC room");
+            if (WebRTC_JoinRoom(roomId))
+            {
+                isHost = false;
+                connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, false);
+                
+                if (debugMode)
+                    Debug.Log("Joined Game. Room ID: " + roomId + ", Player ID: " + localPlayerId);
+            }
+            else
+            {
+                Debug.LogError("Failed to join WebRTC room. Falling back to single player mode.");
+                // 加入房间失败时，切换到单人模式
+                isSinglePlayerMode = true;
+                isHost = true;
+                connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error joining WebRTC room: " + e.Message + ". Falling back to single player mode.");
+            // 出现异常时，切换到单人模式
+            isSinglePlayerMode = true;
+            isHost = true;
+            connectedPlayers[localPlayerId] = new NetworkPlayer(localPlayerId, true);
         }
 #else
         isHost = false;
@@ -175,7 +235,18 @@ public class WebRTCNetworkManager : MonoBehaviour
         string jsonMessage = JsonUtility.ToJson(blockUpdate);
         
 #if UNITY_WEBGL && !UNITY_EDITOR
-        WebRTC_SendMessage(jsonMessage);
+        // 在单人模式下不发送网络消息
+        if (!isSinglePlayerMode)
+        {
+            try 
+            {
+                WebRTC_SendMessage(jsonMessage);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error sending block update: " + e.Message);
+            }
+        }
 #else
         // 非WebGL平台的模拟实现
         BroadcastMessage(blockUpdate);
@@ -199,7 +270,18 @@ public class WebRTCNetworkManager : MonoBehaviour
         if (isHost)
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
-            WebRTC_SendMessage(jsonMessage);
+            // 在单人模式下不发送网络消息
+            if (!isSinglePlayerMode)
+            {
+                try 
+                {
+                    WebRTC_SendMessage(jsonMessage);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError("Error sending player position: " + e.Message);
+                }
+            }
 #else
             // 非WebGL平台的模拟实现
             BroadcastMessage(playerUpdate);

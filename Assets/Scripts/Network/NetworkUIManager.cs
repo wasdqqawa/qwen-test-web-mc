@@ -83,6 +83,15 @@ public class NetworkUIManager : MonoBehaviour
         
         // 在单人模式下，不需要更新玩家数量
     }
+    
+    // 供JavaScript调用的静态方法
+    public static void StartSinglePlayerFromJS()
+    {
+        if (Instance != null)
+        {
+            Instance.OnSinglePlayerButtonClicked();
+        }
+    }
 
     void OnJoinButtonClicked()
     {

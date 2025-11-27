@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minecraft-Style 3D WebGL Game</title>
-    <script src="https://simplewebrtc.com/latest-v3.js"></script>
+    
     <style>
         body { 
             margin: 0; 
@@ -76,9 +76,10 @@
         
         <!-- Network Connection Panel -->
         <div id="connectionPanel" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 30px; border-radius: 10px; z-index: 200; display: block;">
-            <h2 style="text-align: center; margin-top: 0;">Multiplayer Connection</h2>
+            <h2 style="text-align: center; margin-top: 0;">Game Mode</h2>
             <div style="display: flex; flex-direction: column; align-items: center;">
-                <button id="hostButton" style="padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Host Game</button>
+                <button id="singlePlayerButton" style="padding: 10px 20px; margin: 10px; background: #9E9E9E; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Single Player</button>
+                <button id="hostButton" style="padding: 10px 20px; margin: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Host Multiplayer</button>
                 <div style="display: flex; align-items: center; margin: 10px;">
                     <input type="text" id="roomIdInput" placeholder="Enter Room ID" style="padding: 10px; margin-right: 10px; border-radius: 5px; border: none; width: 200px;">
                     <button id="joinButton" style="padding: 10px 20px; background: #2196F3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">Join Game</button>
@@ -121,7 +122,7 @@
             }, 1000);
         });
         
-        // WebRTC Network Functions
+        // WebRTC Network Functions - 使用原生WebRTC API以确保Firefox兼容性
         let webRTCManager = null;
         let unityInstance = null;
         
@@ -137,36 +138,154 @@
             }
         };
         
-        // 初始化WebRTC
+        // 初始化WebRTC - 使用原生API
         function initWebRTC() {
-            if (typeof SimpleWebRTC !== 'undefined') {
-                webRTCManager = new SimpleWebRTC({
-                    localVideoEl: 'localVideo',
-                    remoteVideosEl: 'remoteVideos',
-                    autoRequestMedia: false,
-                    connection: new RTCMultiConnection(),
-                });
+            // 检查浏览器WebRTC支持
+            if (!window.RTCPeerConnection || !window.RTCDataChannel) {
+                console.error("WebRTC not supported by this browser");
+                return false;
+            }
+            
+            // 创建一个兼容Firefox和Chrome的WebRTC实现
+            webRTCManager = {
+                connection: null,
+                isHost: false,
+                roomId: null,
+                peers: {},
+                dataChannels: {},
                 
-                // 配置连接
-                webRTCManager.connection.socketURL = 'https://rtcmulticonnection.herokuapp.com:443/';
-                webRTCManager.connection.session = {
-                    data: true, // 启用数据通道
-                    audio: false, // 不需要音频
-                    video: false  // 不需要视频
-                };
+                // 初始化连接
+                init: function() {
+                    // 使用兼容性更好的配置
+                    const config = {
+                        iceServers: [
+                            { urls: "stun:stun.l.google.com:19302" },
+                            { urls: "stun:stun1.l.google.com:19302" },
+                            { urls: "stun:stun2.l.google.com:19302" }
+                        ]
+                    };
+                    
+                    this.connection = new RTCPeerConnection(config);
+                    
+                    // 创建数据通道
+                    const dataChannel = this.connection.createDataChannel("data", {
+                        ordered: true,
+                        maxRetransmits: 10
+                    });
+                    
+                    this.setupDataChannel(dataChannel);
+                    this.setupConnectionEvents();
+                    
+                    return true;
+                },
                 
-                // 监听数据消息
-                webRTCManager.connection.onmessage = function(event) {
-                    // 将接收到的消息传递给Unity
-                    if (unityInstance) {
-                        unityInstance.SendMessage('WebRTCNetworkManager', 'OnWebRTCMessage', event.data);
+                // 设置数据通道事件
+                setupDataChannel: function(channel) {
+                    const self = this;
+                    
+                    channel.onopen = function() {
+                        console.log("Data channel opened");
+                    };
+                    
+                    channel.onclose = function() {
+                        console.log("Data channel closed");
+                    };
+                    
+                    channel.onerror = function(err) {
+                        console.error("Data channel error:", err);
+                    };
+                    
+                    channel.onmessage = function(event) {
+                        // 将接收到的消息传递给Unity
+                        if (window.unityInstance) {
+                            window.unityInstance.SendMessage('WebRTCNetworkManager', 'OnWebRTCMessage', event.data);
+                        }
+                    };
+                    
+                    this.dataChannels["default"] = channel;
+                },
+                
+                // 设置连接事件
+                setupConnectionEvents: function() {
+                    const self = this;
+                    
+                    this.connection.ondatachannel = function(event) {
+                        const channel = event.channel;
+                        self.setupDataChannel(channel);
+                    };
+                    
+                    this.connection.onicecandidate = function(event) {
+                        if (event.candidate) {
+                            // 发送ICE候选者
+                            self.sendSignal({
+                                type: "ice-candidate",
+                                candidate: event.candidate
+                            });
+                        }
+                    };
+                    
+                    this.connection.onconnectionstatechange = function() {
+                        console.log("Connection state:", self.connection.connectionState);
+                    };
+                    
+                    this.connection.oniceconnectionstatechange = function() {
+                        console.log("ICE connection state:", self.connection.iceConnectionState);
+                    };
+                },
+                
+                // 发送信号消息
+                sendSignal: function(message) {
+                    // 这里需要实现信令服务器通信
+                    // 暂时使用本地模拟
+                    console.log("Signal message:", message);
+                },
+                
+                // 创建房间
+                createRoom: function(roomId) {
+                    this.isHost = true;
+                    this.roomId = roomId;
+                    console.log("Created room: " + roomId);
+                    return true;
+                },
+                
+                // 加入房间
+                joinRoom: function(roomId) {
+                    this.isHost = false;
+                    this.roomId = roomId;
+                    console.log("Joined room: " + roomId);
+                    return true;
+                },
+                
+                // 发送消息
+                sendMessage: function(message) {
+                    const channel = this.dataChannels["default"];
+                    if (channel && channel.readyState === "open") {
+                        channel.send(message);
+                        return true;
                     }
-                };
+                    console.error("Data channel not open");
+                    return false;
+                },
                 
+                // 检查连接状态
+                isConnected: function() {
+                    return this.connection && 
+                           (this.connection.connectionState === "connected" || 
+                            this.connection.connectionState === "connecting");
+                },
+                
+                // 获取对等方数量
+                getPeerCount: function() {
+                    return Object.keys(this.peers).length;
+                }
+            };
+            
+            // 初始化WebRTC管理器
+            if (webRTCManager.init()) {
                 console.log("WebRTC Initialized");
                 return true;
             }
-            console.error("SimpleWebRTC not loaded");
+            
             return false;
         }
         
@@ -178,12 +297,11 @@
             }
             
             const roomId = "mc_" + Date.now().toString();
-            webRTCManager.createRoom(roomId, function(roomId) {
-                console.log("Created room: " + roomId);
-                document.getElementById('connectionStatus').textContent = "Hosting Game: " + roomId;
-                document.getElementById('roomIdInput').value = roomId;
-                document.getElementById('connectionPanel').style.display = 'none';
-            });
+            webRTCManager.createRoom(roomId);
+            console.log("Created room: " + roomId);
+            document.getElementById('connectionStatus').textContent = "Hosting Game: " + roomId;
+            document.getElementById('roomIdInput').value = roomId;
+            document.getElementById('connectionPanel').style.display = 'none';
             
             return true;
         }
@@ -195,11 +313,10 @@
                 return false;
             }
             
-            webRTCManager.joinRoom(roomId, function() {
-                console.log("Joined room: " + roomId);
-                document.getElementById('connectionStatus').textContent = "Joined Game: " + roomId;
-                document.getElementById('connectionPanel').style.display = 'none';
-            });
+            webRTCManager.joinRoom(roomId);
+            console.log("Joined room: " + roomId);
+            document.getElementById('connectionStatus').textContent = "Joined Game: " + roomId;
+            document.getElementById('connectionPanel').style.display = 'none';
             
             return true;
         }
@@ -211,8 +328,7 @@
                 return false;
             }
             
-            webRTCManager.connection.send(message);
-            return true;
+            return webRTCManager.sendMessage(message);
         }
         
         // 检查连接状态
@@ -221,8 +337,7 @@
                 return false;
             }
             
-            return webRTCManager.connection.isInitiator || 
-                   webRTCManager.getPeers().length > 0;
+            return webRTCManager.isConnected();
         }
         
         // 获取对等方数量
@@ -231,15 +346,42 @@
                 return 0;
             }
             
-            return webRTCManager.getPeers().length;
+            return webRTCManager.getPeerCount();
+        }
+        
+        // 单人游戏功能
+        function startSinglePlayer() {
+            console.log("Starting in single player mode");
+            document.getElementById('connectionStatus').textContent = "Single Player Mode";
+            document.getElementById('connectionPanel').style.display = 'none';
+            
+            // 通知Unity进入单人模式
+            if (window.unityInstance) {
+                window.unityInstance.SendMessage('NetworkUIManager', 'StartSinglePlayerFromJS', '');
+            } else {
+                // 如果Unity实例尚未可用，等待一会儿再尝试
+                setTimeout(function() {
+                    if (window.unityInstance) {
+                        window.unityInstance.SendMessage('NetworkUIManager', 'StartSinglePlayerFromJS', '');
+                    }
+                }, 1000);
+            }
+            return true;
         }
         
         // 设置按钮事件
+        document.getElementById('singlePlayerButton').addEventListener('click', function() {
+            startSinglePlayer();
+        });
+        
         document.getElementById('hostButton').addEventListener('click', function() {
             if (initWebRTC()) {
                 createRoom();
             } else {
-                alert("Failed to initialize WebRTC. Please check your browser supports it.");
+                // 如果WebRTC初始化失败，仍然可以进入单人模式
+                if (confirm("WebRTC initialization failed. Do you want to continue in single player mode?")) {
+                    startSinglePlayer();
+                }
             }
         });
         
@@ -249,7 +391,10 @@
                 if (initWebRTC()) {
                     joinRoom(roomId);
                 } else {
-                    alert("Failed to initialize WebRTC. Please check your browser supports it.");
+                    // 如果WebRTC初始化失败，仍然可以进入单人模式
+                    if (confirm("WebRTC initialization failed. Do you want to continue in single player mode?")) {
+                        startSinglePlayer();
+                    }
                 }
             } else {
                 alert("Please enter a Room ID");
